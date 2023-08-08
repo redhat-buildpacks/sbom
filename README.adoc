@@ -19,7 +19,7 @@ To know what Paketo is doing around Software Bill of Materials (aka SBOM), pleas
 
 ### Prerequisite
 
-Have the `pack`client installed on your machine - see instructions https://buildpacks.io/docs/tools/pack/[here]
+Have the `pack` client installed on your machine - see instructions https://buildpacks.io/docs/tools/pack/[here]
 
 ### How To
 
