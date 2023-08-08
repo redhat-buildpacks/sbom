@@ -122,9 +122,13 @@ kubectl apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/gr
 # See docker hub to get the latest image or tags available: https://hub.docker.com/r/anchore/grype/tags
 GRYPE_IMAGE=anchore/grype:v0.65.1
 
+# Image generated using RHTAP Buildpack Pipeline
 SBOM_IMAGE=quay.io/redhat-user-workloads/cmoullia-tenant/rhtap-buildpack-demo-1/quarkus-hello@sha256:f2066f1a35d7f77a21c635767933e11266a6f8b94f4b61b1a10be9d0d5e20a0e
 
-tkn task start grype -p GRYPE_IMAGE=$GRYPE_IMAGE --workspace name=source-dir,emptyDir="" -p ARGS="$SBOM_IMAGE"
+tkn task start grype \
+  -p GRYPE_IMAGE=$GRYPE_IMAGE \
+  -p ARGS="$SBOM_IMAGE" \
+  --workspace name=source-dir,emptyDir=""
 ----
 
 If you look the log of the task/pod created, then you will be able to see the grype result
