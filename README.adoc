@@ -1,6 +1,10 @@
 # Instructions to read SBOM
 
-## Pack
+Different tools are needed to read/extract SBOM files and to scan them.
+
+To know what Paketo is doing around Software Bill of Materials (aka SBOM), please read first the following documentation https://paketo.io/docs/howto/sbom/[page].
+
+## Pack tool
 
 - Extract first the SBOM "syft" files from the buildpack image
 [,bash]
@@ -27,7 +31,7 @@ layers
         └── sbom.legacy.json
 ----
 
-## Syft and grype
+## Syft and grype only
 
 - Using the SBOM extracted by pack
 [,bash]
@@ -41,12 +45,56 @@ syft ./layers -o syft | grype
 syft $IMAGE --scope all-layers -o syft | grype
 ----
 
-## Tekton task and grype
+## Tekton grype task
 
 Tekton task using grype to read the SBOM packaged part of the buildpack build image
 
+### Pre-req
+
+See the project documentation for more information: https://tekton.dev/
+
+To use Tekton, it is needed to have a k8s cluster (>= 1.24) & local docker registry & the kind CLI installed (>= 0.17)
+
 [,bash]
 ----
+curl -s -L "https://raw.githubusercontent.com/snowdrop/k8s-infra/main/kind/kind.sh" | bash -s install --registry-name kind-registry.local
+----
+
+WARNING: Append as suffix to the local registry name `*.local` otherwise buildpacks lifecycle will report this error during analyse phase `+failed to get previous image: connect to repo store 'kind-registry:5000/buildpack/app': Get "https://kind-registry:5000/v2/": http: server gave HTTP response to HTTPS client+`
+
+to install the latest official release (or a specific release)
+
+[,bash]
+----
+kubectl apply -f https://github.com/tektoncd/pipeline/releases/download/v0.48.0/release.yaml
+----
+
+and optionally, you can also install the Tekton dashboard
+
+[,bash]
+----
+kubectl apply -f https://storage.googleapis.com/tekton-releases/dashboard/latest/release.yaml
+----
+
+Expose the dashboard service externally using an ingress route and open the url in your browser: `tekton-ui.127.0.0.1.nip.io`
+
+[,bash]
+----
+VM_IP=127.0.0.1
+kubectl create ingress tekton-ui -n tekton-pipelines --class=nginx --rule="tekton-ui.$VM_IP.nip.io/*=tekton-dashboard:9097"
+----
+
+When the platform is ready, you can install the Tekton Grype `Task`:
+
+```
+kubectl apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/grype/0.1/grype.yaml
+```
+
+- Next, configure the Grype image to be used and pass also a IMAGE packaging the SBOM files
+
+[,bash]
+----
+# See docker hub to get the latest image or tags available: https://hub.docker.com/r/anchore/grype/tags
 GRYPE_IMAGE=anchore/grype:v0.65.1
 
 SBOM_IMAGE=quay.io/redhat-user-workloads/cmoullia-tenant/rhtap-buildpack-demo-1/quarkus-hello@sha256:f2066f1a35d7f77a21c635767933e11266a6f8b94f4b61b1a10be9d0d5e20a0e
