@@ -107,7 +107,9 @@ VM_IP=127.0.0.1
 kubectl create ingress tekton-ui -n tekton-pipelines --class=nginx --rule="tekton-ui.$VM_IP.nip.io/*=tekton-dashboard:9097"
 ----
 
-When the platform is ready, you can install the Tekton Grype `Task`:
+### How To
+
+- When the platform is ready, you can install the Tekton Grype `Task`:
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/grype/0.1/grype.yaml
