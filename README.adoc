@@ -17,6 +17,12 @@ To know what Paketo is doing around Software Bill of Materials (aka SBOM), pleas
 
 ## Pack tool
 
+### Prerequisite
+
+Have the `pack`client installed on your machine - see instructions https://buildpacks.io/docs/tools/pack/[here]
+
+### How To
+
 - Extract first the SBOM "syft" files from the buildpack image
 [,bash]
 ----
@@ -44,6 +50,12 @@ layers
 
 ## Syft and grype only
 
+### Prerequisite
+
+Have https://github.com/anchore/syft[syft] and https://github.com/anchore/grype[grype] installed on your machine.
+
+### How To
+
 - Using the SBOM extracted by pack
 [,bash]
 ----
@@ -60,7 +72,7 @@ syft $IMAGE --scope all-layers -o syft | grype
 
 Tekton task using grype to read the SBOM packaged part of the buildpack build image
 
-### Pre-req
+### Prerequisite
 
 See the project documentation for more information: https://tekton.dev/
 
