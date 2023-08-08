@@ -115,7 +115,7 @@ kubectl create ingress tekton-ui -n tekton-pipelines --class=nginx --rule="tekto
 kubectl apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/grype/0.1/grype.yaml
 ```
 
-- Next, configure the Grype image to be used and pass also a IMAGE packaging the SBOM files
+- Next, configure the Grype image to be used and pass also an IMAGE packaging the SBOM files
 
 [,bash]
 ----
