@@ -109,7 +109,7 @@ kubectl create ingress tekton-ui -n tekton-pipelines --class=nginx --rule="tekto
 
 ### How To
 
-- When the platform is ready, you can install the Tekton Grype `Task`:
+- When the platform is ready, you can install the Tekton https://github.com/tektoncd/catalog/tree/main/task/grype/0.1[Grype] Task:
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/grype/0.1/grype.yaml
