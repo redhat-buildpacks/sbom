@@ -1,0 +1,75 @@
+# Instructions to read SBOM
+
+## Pack
+
+- Extract first the SBOM "syft" files from the buildpack image
+[,bash]
+----
+IMAGE=quay.io/redhat-user-workloads/cmoullia-tenant/rhtap-buildpack-demo-1/quarkus-hello@sha256:f2066f1a35d7f77a21c635767933e11266a6f8b94f4b61b1a10be9d0d5e20a0e
+
+pack sbom download $IMAGE --remote
+
+tree layers
+layers
+└── sbom
+    └── launch
+        ├── paketo-buildpacks_bellsoft-liberica
+        │   ├── helper
+        │   │   └── sbom.syft.json
+        │   └── jre
+        │       └── sbom.syft.json
+        ├── paketo-buildpacks_ca-certificates
+        │   └── helper
+        │       └── sbom.syft.json
+        ├── paketo-buildpacks_executable-jar
+        │   ├── sbom.cdx.json
+        │   └── sbom.syft.json
+        └── sbom.legacy.json
+----
+
+## Syft and grype
+
+- Using the SBOM extracted by pack
+[,bash]
+----
+syft ./layers -o syft | grype
+----
+
+- Using the URL of the image
+[,bash]
+----
+syft $IMAGE --scope all-layers -o syft | grype
+----
+
+## Tekton task and grype
+
+Tekton task using grype to read the SBOM packaged part of the buildpack build image
+
+[,bash]
+----
+GRYPE_IMAGE=anchore/grype:v0.65.1
+
+SBOM_IMAGE=quay.io/redhat-user-workloads/cmoullia-tenant/rhtap-buildpack-demo-1/quarkus-hello@sha256:f2066f1a35d7f77a21c635767933e11266a6f8b94f4b61b1a10be9d0d5e20a0e
+
+tkn task start grype -p GRYPE_IMAGE=$GRYPE_IMAGE --workspace name=source-dir,emptyDir="" -p ARGS="$SBOM_IMAGE"
+----
+
+If you look the log of the task/pod created, then you will be able to see the grype result
+[,text]
+----
+tkn taskrun logs grype-run-76m4r -f -n default
+[grype] NAME                                                      INSTALLED        FIXED-IN      TYPE            VULNERABILITY        SEVERITY
+[grype] BellSoft Liberica JRE                                     17.0.7                         UnknownPackage  CVE-2023-22041       Medium
+[grype] BellSoft Liberica JRE                                     17.0.7                         UnknownPackage  CVE-2023-22049       Low
+[grype] BellSoft Liberica JRE                                     17.0.7                         UnknownPackage  CVE-2023-22045       Low
+[grype] BellSoft Liberica JRE                                     17.0.7                         UnknownPackage  CVE-2023-22044       Low
+[grype] BellSoft Liberica JRE                                     17.0.7                         UnknownPackage  CVE-2023-22036       Low
+[grype] BellSoft Liberica JRE                                     17.0.7                         UnknownPackage  CVE-2023-22006       Low
+[grype] arc                                                       3.0.0.Alpha5                   java-archive    CVE-2005-2992        Low
+[grype] arc                                                       3.0.0.Alpha5                   java-archive    CVE-2005-2945        Low
+[grype] io.smallrye.reactive.smallrye-mutiny-vertx-auth-common    3.2.0                          java-archive    CVE-2022-37832       Critical
+[grype] io.smallrye.reactive.smallrye-mutiny-vertx-auth-common    3.2.0                          java-archive    CVE-2018-15529       High
+[grype] io.smallrye.reactive.smallrye-mutiny-vertx-auth-common    3.2.0                          java-archive    CVE-2013-0136        High
+[grype] io.smallrye.reactive.smallrye-mutiny-vertx-bridge-common  3.2.0                          java-archive    CVE-2022-37832       Critical
+[grype] io.smallrye.reactive.smallrye-mutiny-vertx-bridge-common  3.2.0                          java-archive    CVE-2018-15529       High
+----
